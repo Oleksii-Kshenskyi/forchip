@@ -3,6 +3,8 @@
 #include "constants.hpp"
 #include "screen.hpp"
 #include "machine.hpp"
+#include <cassert>
+#include <print>
 
 void draw_screen(const Screen& screen) {
     Point start {
@@ -18,7 +20,12 @@ void draw_screen(const Screen& screen) {
     }
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if(argc != 2) {
+        std::println("usage: `./forchip <path-to-rom-file>`");
+        return -1;
+    }
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "FORCHIP!!1");
 
     SetTargetFPS(60);
@@ -31,8 +38,8 @@ int main() {
     screen.set(63, 31);
     screen.set(32, 1);
 
-    Chip8Machine machine;
-    machine.dump_region(0x000, 0x200);
+    Chip8Machine machine { argv[1] };
+    machine.dump_region(0x200, 0x200 + machine.get_rom_size());
 
     while(!WindowShouldClose()) {
         BeginDrawing();

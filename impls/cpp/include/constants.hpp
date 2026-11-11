@@ -3,6 +3,7 @@
 #include <cstdint>
 
 constexpr uint16_t KB = 1024;
+constexpr uint16_t MAX_ROM_SIZE = 3584;
 
 constexpr uint16_t SCREEN_WIDTH = 1280;
 constexpr uint16_t SCREEN_HEIGHT = 720;
