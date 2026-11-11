@@ -2,17 +2,12 @@
 
 #include "constants.hpp"
 #include "screen.hpp"
+#include "machine.hpp"
 
 void draw_screen(const Screen& screen) {
-    Point center { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-
     Point start {
-        static_cast<uint16_t>(center.x - (SCREEN_WIDTH_CHIP / 2 * PIXEL_SIZE)),
-        static_cast<uint16_t>(center.y - (SCREEN_HEIGHT_CHIP / 2 * PIXEL_SIZE))
-    };
-    Point end {
-        static_cast<uint16_t>(center.x + (SCREEN_WIDTH_CHIP / 2 * PIXEL_SIZE)),
-        static_cast<uint16_t>(center.y + (SCREEN_HEIGHT_CHIP / 2 * PIXEL_SIZE))
+        static_cast<uint16_t>(SCREEN_WIDTH / 2 - (SCREEN_WIDTH_CHIP / 2 * PIXEL_SIZE)),
+        static_cast<uint16_t>(SCREEN_HEIGHT / 2 - (SCREEN_HEIGHT_CHIP / 2 * PIXEL_SIZE))
     };
 
     for(uint16_t x = 0; x < SCREEN_WIDTH_CHIP; x++) {
@@ -35,6 +30,9 @@ int main() {
     screen.set(0, 31);
     screen.set(63, 31);
     screen.set(32, 1);
+
+    Chip8Machine machine;
+    machine.dump_region(0x000, 0x200);
 
     while(!WindowShouldClose()) {
         BeginDrawing();
