@@ -52,6 +52,8 @@ Chip8Machine::Chip8Machine(std::string rom_path) {
     this->screen.set(0, 31);
     this->screen.set(63, 31);
     this->screen.set(32, 1);
+    this->stack[2] = 0x0B0B;
+    this->sp = 2;
 }
 
 uint8_t Chip8Machine::read_byte(uint16_t address) {
@@ -187,6 +189,8 @@ std::expected<void, std::string> Chip8Machine::execute_next() {
         std::println("FATAL: PC OVERFLOW, REACHED END OF MEMORY, ABORTING!");
         std::abort();
     }
+    // FIXME: in cases when PC needs to be set to a specific value during an instruction,
+    //        like RET setting PC to the stack value, this increment breaks execution flow.
     this->pc_register += 2;
     return result;
 }

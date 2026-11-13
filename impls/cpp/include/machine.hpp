@@ -64,14 +64,13 @@ class Chip8Machine {
 
         uint8_t v_registers[16] {};
         uint16_t i_register {};
-        uint16_t pc_register {};
+        uint16_t pc_register { 0x200 };
         uint8_t sp {};
         uint16_t stack[16] {};
         uint8_t dt_register {};
         uint8_t st_register {};
 
         uint8_t memory[4 * KB] {};
-        uint16_t program_pointer { 0x200 };
 
         size_t rom_size;
 
