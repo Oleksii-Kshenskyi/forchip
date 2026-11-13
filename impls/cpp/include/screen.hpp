@@ -19,6 +19,8 @@ class Screen {
     public:
         void set(uint16_t x, uint16_t y);
         bool get(uint16_t x, uint16_t y) const;
+        void draw();
+        void clear();
 
     private:
         Matrix2D<uint8_t, SCREEN_WIDTH_CHIP, SCREEN_HEIGHT_CHIP> screen {};
