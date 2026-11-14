@@ -187,6 +187,7 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_instruction(ui
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_next() {
     uint16_t instruction = this->memory[this->pc_register] << 8 | this->memory[this->pc_register + 1];
+    //std::println("Byte 0: {:02X}; Byte 1: {:02X};", this->memory[this->pc_register], this->memory[this->pc_register + 1]);
     std::println("=> Executing instr: [{:04X}];", instruction);
     auto result = this->execute_instruction(instruction);
 
@@ -216,28 +217,69 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_0s(uint16_t in
 // Only one instruction possible on 1s - Jump to addr.
 std::expected<InstructionType, std::string> Chip8Machine::execute_1s(uint16_t instruction) {
     uint16_t addr = instruction & 0x0FFF; // need first 3 digits of the opcode
+    std::println("@@@ Instr: {:04X}; addr: {:04X};", instruction, addr);
+    this->pc_register = addr;
+    std::println("@@@ PC set to: {:04X};", this->pc_register);
+    return { InstructionType::ControlFlow };
+}
+
+// Only one instruction possible on 2s - CALL addr
+std::expected<InstructionType, std::string> Chip8Machine::execute_2s(uint16_t instruction) {
+    uint16_t addr = instruction & 0x0FFF; // need first 3 digits for addr to call
+    this->stack[++this->sp] = this->pc_register + 2;
     this->pc_register = addr;
     return { InstructionType::ControlFlow };
 }
 
-std::expected<InstructionType, std::string> Chip8Machine::execute_2s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
-}
-
 std::expected<InstructionType, std::string> Chip8Machine::execute_3s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t rgstr = this->nth_digit(instruction, 2);
+    uint8_t comparison_byte = instruction & 0x00FF;
+    if(this->v_registers[rgstr] == comparison_byte) {
+        this->pc_register += 2;
+        std::println("Vx == KK, skipping next instruction!");
+    } else {
+        std::println("Vx != KK, not skipping the next instruction.");
+    }
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_4s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t rgstr = this->nth_digit(instruction, 2);
+    uint8_t comparison_byte = instruction & 0x00FF;
+    if(this->v_registers[rgstr] != comparison_byte) {
+        this->pc_register += 2;
+        std::println("[SNE] Vx != KK, skipping next instruction!");
+    } else {
+        std::println("[SNE] Vx == KK, not skipping the next instruction.");
+    }
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_5s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t vy = this->nth_digit(instruction, 1);
+    uint8_t control_zero = this->nth_digit(instruction, 0);
+    if(this->v_registers[vx] == this->v_registers[vy]) {
+        this->pc_register += 2;
+        std::println("[5xy0] Vx == Vy, skipping next instruction!");
+    } else {
+        std::println("[5xy0] Vx != Vy, not skipping the next instruction.");
+    }
+
+    if (control_zero == 0) {
+        return { InstructionType::Linear };
+    }
+    else {
+        return std::unexpected { "WARNING: instruction 5xy0, expected last digit to be 0!" };
+    }
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_6s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t new_vx_value = instruction & 0x00FF;
+    this->v_registers[vx] = new_vx_value;
+    std::println("[ASSIGN] V{:01X} = {:02X};", vx, new_vx_value);
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_7s(uint16_t instruction) {

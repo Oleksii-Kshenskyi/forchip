@@ -7,8 +7,6 @@
 #include <fstream>
 #include <iostream>
 
-
-
 int main(int argc, char** argv) {
     if(argc != 2) {
         std::println("usage: `./forchip <path-to-rom-file>`");
@@ -44,7 +42,9 @@ int main(int argc, char** argv) {
 
 int main_2() {
     std::ofstream ofs("mytest.ch8", std::ios::trunc | std::ios::binary);
-    const uint8_t bytes[] = { 0x00, 0xE0, 0x1C, 0x09 };
+    //const uint8_t bytes[] = { 0x00, 0xE0, 0x22, 0x07, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x00, 0xEE };
+    const uint8_t bytes[] = { 0x00, 0xE0, 0x63, 0xCC, 0x33, 0xCC, 0xFF, 0xFF, 0x00, 0x00 };
+    //const uint8_t bytes[] = { 0x63, 0xEC, 0x6D, 0xEC, 0x53, 0xF0, 0xFF, 0xFF, 0x00, 0x00 };
     ofs.write(reinterpret_cast<const char*>(&bytes), sizeof(bytes));
     ofs.close();
 
