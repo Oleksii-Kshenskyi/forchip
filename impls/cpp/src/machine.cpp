@@ -141,7 +141,7 @@ void Chip8Machine::ret() {
     
 }
 
-std::expected<void, std::string> Chip8Machine::execute_instruction(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_instruction(uint16_t instruction) {
     uint8_t split_digit = this->nth_digit(instruction, 3);
     switch(split_digit) {
         case 0:
@@ -181,88 +181,90 @@ std::expected<void, std::string> Chip8Machine::execute_instruction(uint16_t inst
     }
 }
 
-std::expected<void, std::string> Chip8Machine::execute_next() {
+std::expected<InstructionType, std::string> Chip8Machine::execute_next() {
     uint16_t instruction = this->memory[this->pc_register] << 8 | this->memory[this->pc_register + 1];
     std::println("=> Executing instr: [{:04X}];", instruction);
     auto result = this->execute_instruction(instruction);
+
     if(this->pc_register >= 0xFFE) {
         std::println("FATAL: PC OVERFLOW, REACHED END OF MEMORY, ABORTING!");
         std::abort();
     }
-    // FIXME: in cases when PC needs to be set to a specific value during an instruction,
-    //        like RET setting PC to the stack value, this increment breaks execution flow.
-    this->pc_register += 2;
+
+    if(!(result.has_value() && result.value() == InstructionType::ControlFlow)) {
+        this->pc_register += 2;
+    }
     return result;
 }
 
-std::expected<void, std::string> Chip8Machine::execute_0s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_0s(uint16_t instruction) {
     if(instruction == 0x00E0) {
         this->clear_screen();
-        return {};
+        return { InstructionType::Linear };
     } else if (instruction == 0x00EE) {
         this->ret();
-        return {};
+        return { InstructionType::ControlFlow };
     } else {
         return std::unexpected { std::format("Old {:4X} SYS instruction called; ignored!", instruction) };
     }
 }
 
-std::expected<void, std::string> Chip8Machine::execute_1s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_1s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_2s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_2s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_3s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_3s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_4s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_4s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_5s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_5s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_6s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_6s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_7s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_7s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_8s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_8s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_9s(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_9s(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_as(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_as(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_bs(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_bs(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_cs(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_cs(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_ds(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_ds(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_es(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_es(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }
 
-std::expected<void, std::string> Chip8Machine::execute_fs(uint16_t instruction) {
+std::expected<InstructionType, std::string> Chip8Machine::execute_fs(uint16_t instruction) {
     return std::unexpected { "NOT IMPLEMENTED YET" };
 }

@@ -16,6 +16,11 @@
 // 0x200 - ... => program from ROM
 
 
+enum class InstructionType {
+    Linear,
+    ControlFlow,
+};
+
 // REFACTOR: maybe extract memory into a separate composed class?
 class Chip8Machine {
     public:
@@ -29,7 +34,7 @@ class Chip8Machine {
         void draw_screen();
         void clear_screen();
 
-        std::expected<void, std::string> execute_next();
+        std::expected<InstructionType, std::string> execute_next();
 
         // Command execution methods
         void ret();
@@ -44,23 +49,23 @@ class Chip8Machine {
 
         std::expected<void, std::string> read_from_file(std::string rom_path);
 
-        std::expected<void, std::string> execute_instruction(uint16_t instruction);
-        std::expected<void, std::string> execute_0s(uint16_t instruction);
-        std::expected<void, std::string> execute_1s(uint16_t instruction);
-        std::expected<void, std::string> execute_2s(uint16_t instruction);
-        std::expected<void, std::string> execute_3s(uint16_t instruction);
-        std::expected<void, std::string> execute_4s(uint16_t instruction);
-        std::expected<void, std::string> execute_5s(uint16_t instruction);
-        std::expected<void, std::string> execute_6s(uint16_t instruction);
-        std::expected<void, std::string> execute_7s(uint16_t instruction);
-        std::expected<void, std::string> execute_8s(uint16_t instruction);
-        std::expected<void, std::string> execute_9s(uint16_t instruction);
-        std::expected<void, std::string> execute_as(uint16_t instruction);
-        std::expected<void, std::string> execute_bs(uint16_t instruction);
-        std::expected<void, std::string> execute_cs(uint16_t instruction);
-        std::expected<void, std::string> execute_ds(uint16_t instruction);
-        std::expected<void, std::string> execute_es(uint16_t instruction);
-        std::expected<void, std::string> execute_fs(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_instruction(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_0s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_1s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_2s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_3s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_4s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_5s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_6s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_7s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_8s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_9s(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_as(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_bs(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_cs(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_ds(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_es(uint16_t instruction);
+        std::expected<InstructionType, std::string> execute_fs(uint16_t instruction);
 
         uint8_t v_registers[16] {};
         uint16_t i_register {};
