@@ -20,9 +20,13 @@ std::expected<void, std::string> Chip8Machine::read_from_file(std::string rom_pa
     }
 
     std::ifstream ifrom { rom_path, std::ios::in | std::ios::binary };
-    uint8_t buffer_num;
-    for(uint16_t ptr = 0x200; ifrom >> buffer_num; ptr++) {
-        this->memory[ptr] = buffer_num;
+    uint8_t byte = 0; bool bad = false;
+    for(uint16_t ptr = 0x200; !bad; ptr++) {
+        ifrom.read(reinterpret_cast<char*>(&byte), sizeof(byte));
+        bad = ifrom.fail();
+        if(!bad) {
+            this->memory[ptr] = byte;
+        }
     }
     ifrom.close();
 
@@ -95,18 +99,18 @@ void Chip8Machine::dump_registers() {
     std::println("========= REGISTER STATE ==============");
     std::print("Vs: ");
     for(int i = 0; i < 16; i++) {
-        std::print("V{:1X} = {}; ", i, this->v_registers[i]);
+        std::print("V{:1X} = {:02X}; ", i, this->v_registers[i]);
     }
-    std::println("\nI = {}", this->i_register);
-    std::println("PC = {}", this->pc_register);
-    std::println("SP = {}", this->sp);
+    std::println("\nI = {:04X}", this->i_register);
+    std::println("PC = {:04X}", this->pc_register);
+    std::println("SP = {:02X}", this->sp);
     std::print("stack: [ ");
     for(int i = 0; i < 16; i++) {
-        std::print("{} ", this->stack[i]);
+        std::print("{:04X} ", this->stack[i]);
     }
     std::println("]");
-    std::println("DT = {}", this->dt_register);
-    std::println("ST = {}", this->st_register);
+    std::println("DT = {:02X}", this->dt_register);
+    std::println("ST = {:02X}", this->st_register);
     std::println("LOADED A ROM of {} BYTES.", this->rom_size);
 
     std::println("======== END REGISTER STATE ============\n");
@@ -209,8 +213,11 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_0s(uint16_t in
     }
 }
 
+// Only one instruction possible on 1s - Jump to addr.
 std::expected<InstructionType, std::string> Chip8Machine::execute_1s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint16_t addr = instruction & 0x0FFF; // need first 3 digits of the opcode
+    this->pc_register = addr;
+    return { InstructionType::ControlFlow };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_2s(uint16_t instruction) {
