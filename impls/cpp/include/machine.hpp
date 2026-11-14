@@ -2,6 +2,7 @@
 
 #include <string>
 #include <expected>
+#include <random>
 
 #include "constants.hpp"
 #include "screen.hpp"
@@ -19,6 +20,7 @@
 enum class InstructionType {
     Linear,
     ControlFlow,
+    HALT,
 };
 
 // REFACTOR: maybe extract memory into a separate composed class?
@@ -46,6 +48,7 @@ class Chip8Machine {
         uint16_t sprite_address(uint8_t sprite_pos);
         void write_sprite(uint16_t address, const uint8_t* bytes, uint8_t size);
         uint8_t nth_digit(uint16_t source, uint8_t n);
+        uint8_t random_byte();
 
         std::expected<void, std::string> read_from_file(std::string rom_path);
 
@@ -80,4 +83,6 @@ class Chip8Machine {
         size_t rom_size;
 
         Screen screen;
+        std::mt19937 rng_gen;
+        std::uniform_int_distribution<uint16_t> dist;
 };

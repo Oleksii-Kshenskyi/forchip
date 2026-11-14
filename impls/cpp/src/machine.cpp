@@ -38,7 +38,9 @@ uint8_t Chip8Machine::nth_digit(uint16_t source, uint8_t n) {
     return (source >> 4 * n) & mask;
 }
 
-Chip8Machine::Chip8Machine(std::string rom_path) {
+Chip8Machine::Chip8Machine(std::string rom_path)
+    : rng_gen(std::random_device {}()),
+      dist(0, 255) {
     for(uint8_t sprite = 0; sprite <= 0xF; sprite++) {
         uint16_t sprite_address = this->sprite_address(sprite);
         this->write_sprite(sprite_address, &SPRITES[sprite][0], PREDEFINED_SPRITE_SIZE);
@@ -145,6 +147,10 @@ void Chip8Machine::ret() {
     
 }
 
+uint8_t Chip8Machine::random_byte() {
+    return this->dist(this->rng_gen);
+}
+
 std::expected<InstructionType, std::string> Chip8Machine::execute_instruction(uint16_t instruction) {
     uint8_t split_digit = this->nth_digit(instruction, 3);
     switch(split_digit) {
@@ -196,7 +202,7 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_next() {
         std::abort();
     }
 
-    if(!(result.has_value() && result.value() == InstructionType::ControlFlow)) {
+    if(result.has_value() && result.value() == InstructionType::Linear) {
         this->pc_register += 2;
     }
     return result;
@@ -210,7 +216,7 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_0s(uint16_t in
         this->ret();
         return { InstructionType::ControlFlow };
     } else {
-        return std::unexpected { std::format("Old {:4X} SYS instruction called; ignored!", instruction) };
+        return { InstructionType::HALT };
     }
 }
 
@@ -283,7 +289,11 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_6s(uint16_t in
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_7s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t vx_increment = instruction & 0x00FF;
+    this->v_registers[vx] += vx_increment;
+    std::println("[INCREMENT] V{:01X} += {:02X};", vx, vx_increment);
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_8s(uint16_t instruction) {
@@ -291,19 +301,45 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_8s(uint16_t in
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_9s(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t vy = this->nth_digit(instruction, 1);
+    uint8_t control_zero = this->nth_digit(instruction, 0);
+    if(this->v_registers[vx] != this->v_registers[vy]) {
+        this->pc_register += 2;
+        std::println("[9xy0] Vx != Vy, skipping next instruction!");
+    } else {
+        std::println("[9xy0] Vx == Vy, not skipping the next instruction.");
+    }
+
+    if (control_zero == 0) {
+        return { InstructionType::Linear };
+    }
+    else {
+        return std::unexpected { "WARNING: instruction 9xy0, expected last digit to be 0!" };
+    }
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_as(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint16_t new_i_val = instruction & 0x0FFF;
+    this->i_register = new_i_val;
+    std::println("[ASSIGN] I = {:03X};", new_i_val);
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_bs(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint16_t addr = instruction &0x0FFF;
+    this->pc_register = addr + this->v_registers[0];
+    std::println("[B{:03X}] PC = {:03X} + V0 = {:03X} + {:02X} = {:04X};", addr, addr, addr, this->v_registers[0], this->pc_register);
+    return { InstructionType::ControlFlow };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_cs(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t and_byte = instruction & 0x00FF;
+    uint8_t random_byte = this->random_byte();
+    this->v_registers[vx] = random_byte & and_byte;
+    std::println("[C] V{:01X} = RNG[{:02X}] & {:02X} = {:02X};", vx, random_byte, and_byte, this->v_registers[vx]);
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_ds(uint16_t instruction) {
