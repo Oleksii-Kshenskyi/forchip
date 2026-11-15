@@ -1,14 +1,22 @@
 #include "screen.hpp"
 #include <cstdint>
+#include <print>
 
 #include "raylib.h"
 
 void Screen::set(uint16_t x, uint16_t y) {
-    this->screen[x][y] = 1;
+    uint64_t& row = this->screen[y];
+    uint64_t mask = 1ULL << x;
+    std::println("[SET ({:02},{:02})]: row = {:08X}; mask = {:08X};",
+        x, y, row ,mask);
+    row |= mask;
+    std::println("=> ROW AFTER MASK: {:08X};", row);
+    std::println("=> ROW AFTER MASK/this->screen: {:08X};", this->screen[y]);
 }
 
 bool Screen::get(uint16_t x, uint16_t y) const {
-    return this->screen[x][y];
+    const uint64_t& row = this->screen[y];
+    return static_cast<bool>((row >> x) & 0x1);
 }
 
 void Screen::draw() {

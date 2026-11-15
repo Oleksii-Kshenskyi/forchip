@@ -12,8 +12,8 @@ struct Point {
     uint16_t y;
 };
 
-template<typename T, std::size_t Row, std::size_t Col>
-using Matrix2D = std::array<std::array<T, Col>, Row>;
+template<typename std::size_t Row>
+using Matrix2D = std::array<uint64_t, Row>;
 
 class Screen {
     public:
@@ -23,5 +23,5 @@ class Screen {
         void clear();
 
     private:
-        Matrix2D<uint8_t, SCREEN_WIDTH_CHIP, SCREEN_HEIGHT_CHIP> screen {};
+        Matrix2D<SCREEN_HEIGHT_CHIP> screen {};
 };

@@ -58,8 +58,6 @@ Chip8Machine::Chip8Machine(std::string rom_path)
     this->screen.set(0, 31);
     this->screen.set(63, 31);
     this->screen.set(32, 1);
-    this->stack[2] = 0x0B0B;
-    this->sp = 2;
 }
 
 uint8_t Chip8Machine::read_byte(uint16_t address) {
@@ -342,8 +340,13 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_cs(uint16_t in
     return { InstructionType::Linear };
 }
 
+// The only possible instruction for D is Dxyn, which is
+// "Display n-byte sprite at memory location I, coordinates (Vx, Vy)".
 std::expected<InstructionType, std::string> Chip8Machine::execute_ds(uint16_t instruction) {
-    return std::unexpected { "NOT IMPLEMENTED YET" };
+    uint8_t vx = this->nth_digit(instruction, 2);
+    uint8_t vy = this->nth_digit(instruction, 1);
+    uint8_t sprite_size = this->nth_digit(instruction, 0);
+    return { InstructionType::Linear };
 }
 
 std::expected<InstructionType, std::string> Chip8Machine::execute_es(uint16_t instruction) {
