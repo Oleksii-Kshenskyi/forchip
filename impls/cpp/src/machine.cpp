@@ -51,13 +51,6 @@ Chip8Machine::Chip8Machine(std::string rom_path)
         std::println("{}", result.error());
         std::exit(-1);
     }
-
-    this->screen.set(0, 0);
-    this->screen.set(2, 0);
-    this->screen.set(63, 0);
-    this->screen.set(0, 31);
-    this->screen.set(63, 31);
-    this->screen.set(32, 1);
 }
 
 uint8_t Chip8Machine::read_byte(uint16_t address) {
@@ -343,9 +336,16 @@ std::expected<InstructionType, std::string> Chip8Machine::execute_cs(uint16_t in
 // The only possible instruction for D is Dxyn, which is
 // "Display n-byte sprite at memory location I, coordinates (Vx, Vy)".
 std::expected<InstructionType, std::string> Chip8Machine::execute_ds(uint16_t instruction) {
-    uint8_t vx = this->nth_digit(instruction, 2);
-    uint8_t vy = this->nth_digit(instruction, 1);
+    uint8_t vx = this->v_registers[this->nth_digit(instruction, 2)];
+    uint8_t vy = this->v_registers[this->nth_digit(instruction, 1)];
     uint8_t sprite_size = this->nth_digit(instruction, 0);
+    for(uint16_t delta = 0; delta < sprite_size; delta++) {
+        uint16_t addr = this->i_register + delta;
+        uint8_t vy_rollover = (vy + delta) % SCREEN_HEIGHT_CHIP;
+        uint8_t display_byte = this->memory[addr];
+
+        this->screen.display_byte(vx, vy_rollover, display_byte);
+    }
     return { InstructionType::Linear };
 }
 
